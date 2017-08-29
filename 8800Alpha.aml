@@ -173,7 +173,7 @@ Auto-Update fields -->
                     <!-- Clean Up -->
 <AMLABEL LABELNAME="500_CleanUp" />
      <AMSET VARIABLENAME="vCSVRecRow">%vCSVRecRow - 1%</AMSET>
-                    <!-- Send email notification -->
+                    <!-- Send email notification to all selected users  in next Bulk Load -->
      <AMLOOP TYPE="EXPRESSION" EXPRESSION="%vCSVRecRow=1%" CONDITION="until">
                <AMEXCELGETCELL SESSION="CSV" RESULTVARIABLE="vEmailAddress" CELLROW="%vCSVRecRow%" CELLCOLUMN="1" WORKSHEET="EmailAddress" />
                <AMVARIABLE NAME="vEmailAddress">fuquaf@charlescountymd.gov</AMVARIABLE>
