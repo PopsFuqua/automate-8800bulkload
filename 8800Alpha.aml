@@ -78,6 +78,7 @@ Auto-Update fields -->
      <AMEXCELGETCELL SESSION="PhoneDetailFile" RESULTVARIABLE="vPhonesAllDetails_Description" CELLROW="%vPhonesAllDetailsRow%" CELLCOLUMN="2" WORKSHEET="PhoneDetail" />
 <AMGOTO LABELNAME="301_Return" />
 <AMLABEL LABELNAME="310_Create_CSV_File" />
+     <!-- Create Unique Bulk Load file name by (Date+Time) and copy seed CSV to new file name -->
      <AMSET VARIABLENAME="vMon">%str$(Month(now()))%</AMSET>
                     <!-- Pad Month with zero if less than 10 -->
                     <AMIF EXPRESSION="%vMon% &lt; 10">
