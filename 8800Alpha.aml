@@ -1,0 +1,211 @@
+<AMMANAGEDTASKFILE>
+<TASK ID="{29E20316-1FDB-4FFD-B91B-929F71B55420}" NAME="8800Alpha" FILENAME="C:\ProgramData\Network Automation\AutoMate 9\Tasks\8800Alpha (1).aml" LASTRUN="42970.5899971644" LASTRUNUTC="2017-08-23T18:09:35Z" LASTRUNRESULT="OKAY" RUNASELEVATED="YES">
+<TRIGGERS>
+</TRIGGERS>
+</TASK>
+<AMTASK>
+<AMTASKHEAD>
+    <TASKINFO TASKVERSION="9054" />
+</AMTASKHEAD>
+
+<AMFUNCTION NAME="Main" RETURNTYPE="variable">
+     <AMLABEL LABELNAME="100_Main" />
+     <!-- NOTE: Check workbook tab names when files get replaced -->
+     <AMGOTO LABELNAME="200_Def_Var" />
+          <!-- Create All Variables -->
+     <AMLABEL LABELNAME="201_Return" />
+     <AMGOTO LABELNAME="300_Open_Files" />
+          <!-- Open Master Phone Details File, New IP Phone MAC Address File -->
+     <AMLABEL LABELNAME="301_Return" />
+     <AMGOTO LABELNAME="310_Create_CSV_File" />
+          <!-- Create CSV Bulk Load File using  CSV File Name File to Create Unique Sequential File Name -->
+     <AMLABEL LABELNAME="311_Return" />
+     <AMGOTO LABELNAME="330_LookUp_DetailRecord" />
+          <!-- Get MAC address to export and find user name record # in PhonesAllDetails -->
+     <AMLABEL LABELNAME="331_Return" />
+     <AMGOTO LABELNAME="400_Write_Bulk_Load" />
+          <!-- Write bulk load file to export CSV
+Auto-Update fields -->
+     <AMLABEL LABELNAME="401_Return" />
+<AMLABEL LABELNAME="200_Def_Var" />
+     <!-- Misc Vars -->
+     <!-- CHANGE THIS -->
+     <AMVARIABLE NAME="vFolder" PRIVATE="YES">\\F3-GB\HOME\MIS\NETDIV\Hardware\Telecom\CUCM 11.5 Upgrade FY18\8800BulkLoad\</AMVARIABLE>
+<!--
+     <AMVARIABLE NAME="vFolder" PRIVATE="YES">N:\Hardware\Telecom\CUCM 11.5 Upgrade FY18\8800BulkLoad_Test\</AMVARIABLE>
+     <AMVARIABLE NAME="vFolder" PRIVATE="YES">c:\Temp\8800BulkLoad\</AMVARIABLE>
+
+-->     <AMVARIABLE NAME="vPhoneTotal" DESCRIPTION="Number of expected IP phones to be Bulk Loaded for this run cycle">1</AMVARIABLE>
+     <AMVARIABLE NAME="vDate">%now()%</AMVARIABLE>
+     <AMVARIABLE NAME="vMon"></AMVARIABLE>
+     <AMVARIABLE NAME="vDay"></AMVARIABLE>
+     <AMVARIABLE NAME="vTime"></AMVARIABLE>
+     <AMVARIABLE NAME="vColBegin">1</AMVARIABLE>
+     <AMVARIABLE NAME="vColEnd">217</AMVARIABLE>
+     <AMVARIABLE NAME="vEmailAddress">fuquaf@charlescountymd.gov</AMVARIABLE>
+     <!-- 8800CSV Field Names -->
+     <AMVARIABLE NAME="vCSVFileName" DESCRIPTION="Next Sequential File Name"></AMVARIABLE>
+     <AMVARIABLE NAME="vCSVRecRow" DESCRIPTION="Row of # of CSV 8800 being created">2</AMVARIABLE>
+     <!-- PhonesAllDetails Field Names -->
+     <AMVARIABLE NAME="vPhonesAllDetail">%vFolder%8800BulkLoadCSVs\PhonesAllDetails794060.xlsx</AMVARIABLE>
+     <AMVARIABLE NAME="vPhonesAllDetails_Description"></AMVARIABLE>
+     <AMVARIABLE NAME="vPhonesAllDetailsRow" DESCRIPTION="MAC address field of PhoneDetail Record">2</AMVARIABLE>
+     <!-- 8800MAC Field Names -->
+     <AMVARIABLE NAME="v8800MACFile">%vFolder%8800BulkLoadScript\8800MAC.xlsx</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MACRow" DESCRIPTION="Row number for MAC file">2</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MAC_BatchID"></AMVARIABLE>
+     <AMVARIABLE NAME="v8800MAC" DESCRIPTION="Row number for MAC file">1</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MACDeviceName" DESCRIPTION="Phone model">foo</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MACScanImportDate" DESCRIPTION="Row number for MAC file">01/01/2017</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MACDescription" DESCRIPTION="Phone name">Joe</AMVARIABLE>
+     <AMVARIABLE NAME="v8800MACExport" DESCRIPTION="Yes No export?">No</AMVARIABLE>
+     <AMVARIABLE NAME="vMACExported" DESCRIPTION="Flag set to determine if this MAC address has been pushed to BulkLoad Process">1</AMVARIABLE>
+     <!-- 8800BulkLoad Log Field Names -->
+     <AMVARIABLE NAME="vLOGFile">%vFolder%8800BulkLoadScript\8800BulkLoad Log.xlsx</AMVARIABLE>
+     <AMVARIABLE NAME="vLOGRow">2</AMVARIABLE>
+     <AMVARIABLE NAME="vLOGDate_Time">%Now()%</AMVARIABLE>
+     <AMVARIABLE NAME="vLOGRun_Time">%Now()%</AMVARIABLE>
+     <AMVARIABLE NAME="vLOGRec_In">0</AMVARIABLE>
+     <AMVARIABLE NAME="vLOGRec_Out">0</AMVARIABLE>
+<AMGOTO LABELNAME="201_Return" />
+<AMLABEL LABELNAME="300_Open_Files" />
+     <!-- CHANGE SHEET VISABILITY -->
+     <AMPROCESSES ACTIVITY="end" AM_ONERROR="CONTINUE" CLOSEMESSAGE="NO" PROCESS="EXCEL.EXE" SAMEPROCESS="all" />
+<AMPAUSE ACTION="waitfor" SCALAR="1" />
+     <AMEXCELOPENWORKBOOK WORKBOOK="%vPhonesAllDetail%" SESSION="PhoneDetailFile" VISIBLE="NO" />
+     <AMEXCELOPENWORKBOOK WORKBOOK="%v8800MACFile%" SESSION="8800MAC" VISIBLE="NO" />
+<AMPAUSE ACTION="waitfor" SCALAR="1" />
+     <AMEXCELGETCELL SESSION="PhoneDetailFile" RESULTVARIABLE="vPhonesAllDetails_Description" CELLROW="%vPhonesAllDetailsRow%" CELLCOLUMN="2" WORKSHEET="PhoneDetail" />
+<AMGOTO LABELNAME="301_Return" />
+<AMLABEL LABELNAME="310_Create_CSV_File" />
+     <AMSET VARIABLENAME="vMon">%str$(Month(now()))%</AMSET>
+                    <!-- Pad Month with zero if less than 10 -->
+                    <AMIF EXPRESSION="%vMon% &lt; 10">
+                              <AMSET VARIABLENAME="vMon">%&quot;0&quot;+Trim$(vMon)%</AMSET>
+                    </AMIF>
+     <AMSET VARIABLENAME="vDay">%Trim$(Str$(Day(now())))%</AMSET>
+                    <!-- Pad Day with zero if less than 10 -->
+                    <AMIF EXPRESSION="%vDay% &lt; 10">
+                              <AMSET VARIABLENAME="vDay">%&quot;0&quot;+Trim$(Str$(vDay))%</AMSET>
+                    </AMIF>
+     <AMSET VARIABLENAME="vTime">%str$(Hour(now()))%</AMSET>
+     <AMSET VARIABLENAME="vTime">%Str$(vTime+Trim$(str$(Minute(now()))))%</AMSET>
+     <AMSET VARIABLENAME="vCSVFileName">%Trim$(vMon)+Trim$(vDay)+Trim$(Str$(Year(now())))+Trim$(vTime)+&quot;_CSVBulkLoad.xlsx&quot;%</AMSET>
+          <AMFILESYSTEM AM_RETRY="3" AM_RETRYDELAY="500" SOURCE="%vFolder%8800BulkLoadCSVs\SeedCSV.xlsx" DEST="%vFolder%8800BulkLoadCSVs\%vCSVFileName%" OVERWRITE="yes" />
+     <AMEXCELOPENWORKBOOK WORKBOOK="%vFolder%8800BulkLoadCSVs\%vCSVFileName%" SESSION="CSV" VISIBLE="NO" />
+<AMGOTO LABELNAME="311_Return" />
+<AMLABEL LABELNAME="330_LookUp_DetailRecord" />
+     <!-- Get Next MAC Add to add to Bulk Load File -->
+<AMLOOP TYPE="EXPRESSION" EXPRESSION="%v8800MAC = &quot;ZZZZ&quot;%" CONDITION="until">
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="v8800MAC_BatchID" CELLROW="%v8800MACRow%" CELLCOLUMN="1" WORKSHEET="8800MAC" />
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="v8800MAC" CELLROW="%v8800MACRow%" CELLCOLUMN="2" WORKSHEET="8800MAC" />
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="v8800MACExport" CELLROW="%v8800MACRow%" CELLCOLUMN="7" WORKSHEET="8800MAC" />
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="v8800MACDeviceName" CELLROW="%v8800MACRow%" CELLCOLUMN="3" WORKSHEET="8800MAC" />
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="v8800MACDescription" CELLROW="%v8800MACRow%" CELLCOLUMN="6" WORKSHEET="8800MAC" />
+     <AMEXCELGETCELL SESSION="8800MAC" RESULTVARIABLE="vMACExported" CELLROW="%v8800MACRow%" CELLCOLUMN="8" WORKSHEET="8800MAC" />
+     <AMIF EXPRESSION="%v8800MAC_BatchID = &quot;ZZZZ&quot;">
+          <AMGOTO LABELNAME="500_CleanUp" />
+     </AMIF>
+     <AMIF EXPRESSION="%Trim$(v8800MACExport)%=&quot;Yes&quot; and %Trim$(vMACExported)% =&quot;No&quot;" USECOMPLEXUI="YES">
+               <!-- Find Master Record to match current MAC file user -->
+          <AMLOOP TYPE="EXPRESSION" EXPRESSION="%v8800MACRow = 750%" CONDITION="until">
+                    <AMEXCELGETCELL SESSION="PhoneDetailFile" RESULTVARIABLE="vPhonesAllDetails_Description" CELLROW="%vPhonesAllDetailsRow%" CELLCOLUMN="2" WORKSHEET="PhoneDetail" />
+                    <AMIF EXPRESSION="%Trim$(v8800MACDescription) = Trim$(vPhonesAllDetails_Description)%" USECOMPLEXUI="YES">
+                         <AMEXCELSETCELL SESSION="8800MAC" NEWVALUE="'Yes" CELLROW="%v8800MACRow%" CELLCOLUMN="8" />
+                         <AMSET VARIABLENAME="v8800MACRow">%v8800MACRow + 1%</AMSET>
+                         <AMSET VARIABLENAME="vLOGRec_Out">%vLOGRec_Out + 1%</AMSET>
+                         <AMGOTO LABELNAME="331_Return" />
+                    </AMIF>
+                    <!-- Error check block to warn when no master record matches MAC user name -->
+               <AMIF EXPRESSION="Trim$(%vPhonesAllDetails_Description%) = &quot;ZZZZ&quot;">
+                    <AMSHOWDIALOG WINDOWTITLE="Input Error">Master Record not Found for: %v8800MACDescription%</AMSHOWDIALOG>
+                    <AMSET VARIABLENAME="v8800MACRow">%v8800MACRow + 1%</AMSET>
+                    <AMSET VARIABLENAME="vPhonesAllDetailsRow">1</AMSET>
+                    <AMGOTO LABELNAME="311_Return" />
+               </AMIF>
+               <AMSET VARIABLENAME="vPhonesAllDetailsRow">%vPhonesAllDetailsRow + 1%</AMSET>
+          </AMLOOP>
+     </AMIF>
+     <AMSET VARIABLENAME="v8800MACRow">%v8800MACRow + 1%</AMSET>
+</AMLOOP>
+<AMGOTO LABELNAME="331_Return" />
+                    <!-- Write to CSV -->
+<AMLABEL LABELNAME="400_Write_Bulk_Load" />
+<!--
+          <AMLOOP TOTALLOOPS="1">
+   -->                    <!-- CHANGE THIS -->
+          <AMLOOP TOTALLOOPS="12">
+                    <AMEXCELCELLSTODATASET SESSION="PhoneDetailFile" RESULTDATASET="vDetailRecord" STARTCELLROW="%vPhonesAllDetailsRow%" STARTCELLCOLUMN="%vColBegin%" ENDCELLROW="%vPhonesAllDetailsRow%" ENDCELLCOLUMN="%vColEnd%" WORKSHEET="PhoneDetail" />
+                    <AMEXCELDATASETTOCELLS SESSION="CSV" DATASET="vDetailRecord" CELLROW="%vCSVRecRow%" CELLCOLUMN="%vColBegin%" />
+                    <AMSET VARIABLENAME="vColBegin">%vColBegin + 217%</AMSET>
+                    <AMSET VARIABLENAME="vColEnd">%vColEnd + 217%</AMSET>
+          </AMLOOP>
+                    <!-- Get and Write email address -->
+                    <AMWINDOW ACTIVITY="close" AM_ONERROR="CONTINUE" WINDOWTITLE="Creating Bulk Load File" />
+                    <AMSHOWDIALOG WINDOWTITLE="Creating Bulk Load File" MODAL="NO">Writing Record for: %v8800MACDescription%
+</AMSHOWDIALOG>
+                    <AMEXCELGETCELL SESSION="PhoneDetailFile" RESULTVARIABLE="vEmailAddress" CELLROW="%vPhonesAllDetailsRow%" CELLCOLUMN="38" WORKSHEET="PhoneDetail" />
+                    <AMEXCELSETCELL SESSION="CSV" NEWVALUE="%vEmailAddress+&quot;@charlescountymd.gov&quot;%" CELLROW="%vCSVRecRow%" CELLCOLUMN="1" WORKSHEET="EmailAddress" />
+                         <AMSET VARIABLENAME="vPhonesAllDetailsRow">1</AMSET>
+     <AMEXCELSETCELL SESSION="CSV" NEWVALUE="%&quot;SEP&quot;+v8800MAC%" CELLROW="%vCSVRecRow%" CELLCOLUMN="1" WORKSHEET="CSV" />
+     <AMEXCELSETCELL SESSION="CSV" NEWVALUE="%v8800MACDescription%" CELLROW="%vCSVRecRow%" CELLCOLUMN="2" WORKSHEET="CSV" />
+     <AMEXCELSETCELL SESSION="CSV" NEWVALUE=" " CELLROW="%vCSVRecRow%" CELLCOLUMN="23" WORKSHEET="CSV" />
+     <AMEXCELSETCELL SESSION="CSV" NEWVALUE="SIP" CELLROW="%vCSVRecRow%" CELLCOLUMN="52" WORKSHEET="CSV" />
+     <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Standard SIP Profile" CELLROW="%vCSVRecRow%" CELLCOLUMN="61" WORKSHEET="CSV" />
+     <AMSELECTCASE EXPRESSION="%v8800MACDeviceName%">
+               <AMCASE CONSTANT="8841">
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Standard 8841 SIP" CELLROW="%vCSVRecRow%" CELLCOLUMN="4" WORKSHEET="CSV" />
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Cisco 8841" CELLROW="%vCSVRecRow%" CELLCOLUMN="37" WORKSHEET="CSV" />
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Cisco 8841 - Standard SIP Non-Secure Profile" CELLROW="%vCSVRecRow%" CELLCOLUMN="44" WORKSHEET="CSV" />
+               </AMCASE>
+               <AMCASE CONSTANT="8861">
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Standard 8861 SIP" CELLROW="%vCSVRecRow%" CELLCOLUMN="4" WORKSHEET="CSV" />
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="BEKEM 36-Button Line Expansion Module" CELLROW="%vCSVRecRow%" CELLCOLUMN="21" WORKSHEET="CSV" />
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Cisco 8861" CELLROW="%vCSVRecRow%" CELLCOLUMN="37" WORKSHEET="CSV" />
+                         <AMEXCELSETCELL SESSION="CSV" NEWVALUE="Cisco 8861 - Standard SIP Non-Secure Profile" CELLROW="%vCSVRecRow%" CELLCOLUMN="44" WORKSHEET="CSV" />
+               </AMCASE>
+     </AMSELECTCASE>
+               <AMSET VARIABLENAME="vColBegin">%1%</AMSET>
+               <AMSET VARIABLENAME="vColEnd">%217%</AMSET>
+               <AMSET VARIABLENAME="vLOGRec_In">%vLOGRec_In + 1%</AMSET>
+               <AMSET VARIABLENAME="vCSVRecRow">%vCSVRecRow + 1%</AMSET>
+<AMGOTO LABELNAME="311_Return" />
+                    <!-- Clean Up -->
+<AMLABEL LABELNAME="500_CleanUp" />
+     <AMSET VARIABLENAME="vCSVRecRow">%vCSVRecRow - 1%</AMSET>
+                    <!-- Send email notification -->
+     <AMLOOP TYPE="EXPRESSION" EXPRESSION="%vCSVRecRow=1%" CONDITION="until">
+               <AMEXCELGETCELL SESSION="CSV" RESULTVARIABLE="vEmailAddress" CELLROW="%vCSVRecRow%" CELLCOLUMN="1" WORKSHEET="EmailAddress" />
+               <AMVARIABLE NAME="vEmailAddress">fuquaf@charlescountymd.gov</AMVARIABLE>
+               <AMSENDEMAIL AM_ONERROR="CONTINUE" FROM="IP_Phone_Upgrade" TO="%vEmailAddress%" SUBJECT="IP Phone Upgrade" BODYFILE="\\F3-GB\HOME\MIS\NETDIV\Hardware\Telecom\CUCM 11.5 Upgrade FY18\8800BulkLoad_Test\8800BulkLoadScript\BulkLoadEmailHTML.html" HTML="yes" BCC="foo@charlescountymd.gov" CC="mentonj@charlescountymd.gov" ATTACH="\\F3-GB\HOME\MIS\NETDIV\Hardware\Telecom\CUCM 11.5 Upgrade FY18\8800BulkLoad_Test\8800BulkLoadScript\8800.pdf" CUSTOM="yes" SERVER="172.16.1.253" />
+               <AMSET VARIABLENAME="vCSVRecRow">%vCSVRecRow - 1%</AMSET>
+     </AMLOOP>
+     <AMEXCELCLOSEWORKBOOK SESSION="CSV" />
+     <AMEXCELCLOSEWORKBOOK SESSION="8800MAC" />
+     <AMEXCELCLOSEWORKBOOK SESSION="PhoneDetailFile" />
+     <AMEXCELOPENWORKBOOK WORKBOOK="%vLOGFile%" SESSION="LOGFile" VISIBLE="NO" />
+          <AMLOOP TYPE="EXPRESSION" EXPRESSION="%vLOGRow &gt;0%">
+               <AMEXCELGETCELL SESSION="LOGFile" RESULTVARIABLE="vMon" CELLROW="%vLOGRow%" CELLCOLUMN="7" WORKSHEET="LogFile" />
+               <AMIF EXPRESSION="%vMon% = 0">
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="%vLOGDate_Time%" CELLROW="%vLOGRow%" CELLCOLUMN="1" WORKSHEET="LogFile" />
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="%vLOGRun_Time%" CELLROW="%vLOGRow%" CELLCOLUMN="2" WORKSHEET="LogFile" />
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="%vLOGRec_In%" CELLROW="%vLOGRow%" CELLCOLUMN="3" WORKSHEET="LogFile" />
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="%vLOGRec_Out%" CELLROW="%vLOGRow%" CELLCOLUMN="4" WORKSHEET="LogFile" />
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="%vCSVFileName%" CELLROW="%vLOGRow%" CELLCOLUMN="5" WORKSHEET="LogFile" />
+                    <AMEXCELSETCELL SESSION="LOGFile" NEWVALUE="&quot;1&quot;" CELLROW="%vLOGRow%" CELLCOLUMN="7" WORKSHEET="LogFile" />
+                    <AMBREAK />
+               <AMELSE />
+                    <AMSET VARIABLENAME="vLOGRow">%vLOGRow + 1%</AMSET>
+               </AMIF>
+          </AMLOOP>
+                    <AMEXCELCLOSEWORKBOOK SESSION="LOGFile" />
+     <AMSHOWDIALOG>Start Run Time: %vLOGDate_Time%
+MAC Records In: %vLOGRec_In%
+CSV Records Out: %vLOGRec_Out%
+CSV File Name: %vCSVFileName%
+</AMSHOWDIALOG>
+<AMSTOPTASK STATUSTYPE="SUCCESS" />
+</AMFUNCTION>
+
+</AMTASK>
+</AMMANAGEDTASKFILE>
